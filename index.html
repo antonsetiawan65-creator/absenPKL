@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi Magang XII TKJ</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card-absensi {
+      max-width: 500px;
+      margin: 30px auto;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .header-logo {
+      text-align: center;
+      padding: 20px 10px;
+      background: linear-gradient(135deg, #0056b3, #0088ff);
+      color: white;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }
+    .header-logo img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 10px;
+      background: white;
+      padding: 5px;
+      border-radius: 50%;
+    }
+    .btn-custom {
+      background-color: #0056b3;
+      color: white;
+      font-weight: 600;
+    }
+    .btn-custom:hover {
+      background-color: #004085;
+      color: white;
+    }
+    #locationStatus {
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card card-absensi">
+    <!-- Header dengan Logo Sekolah -->
+    <div class="header-logo">
+      <!-- Ganti URL logo berikut jika Anda memiliki URL logo sekolah yang berbeda -->
+      <img src="https://upload.wikimedia.org/wikipedia/commons/ thumb/8/87/Logo_Muhammadiyah.svg/500px-Logo_Muhammadiyah.svg.png" alt="Logo Sekolah" id="schoolLogo">
+      <h5 class="mb-1">SMKS MUHAMMADIYAH JATIROTO</h5>
+      <p class="mb-0 small">Sistem Absensi Magang Online - XII TKJ</p>
+    </div>
+
+    <div class="card-body p-4">
+      <form id="absenForm">
+        
+        <!-- Tanggal Hari Ini (Otomatis) -->
+        <div class="mb-3">
+          <label class="form-label fw-bold"><i class="fa-regular fa-calendar-days me-1"></i> Tanggal</label>
+          <input type="text" class="form-control" id="tanggalDisplay" readonly disabled>
+        </div>
+
+        <!-- Nama Lengkap -->
+        <div class="mb-3">
+          <label for="nama" class="form-label fw-bold"><i class="fa-solid fa-user me-1"></i> Nama Lengkap Siswa</label>
+          <input type="text" class="form-control" id="nama" placeholder="Masukkan nama lengkap" required>
+        </div>
+
+        <!-- Kelas -->
+        <div class="mb-3">
+          <label for="kelas" class="form-label fw-bold"><i class="fa-solid fa-graduation-cap me-1"></i> Kelas</label>
+          <input type="text" class="form-control" id="kelas" value="XII TKJ" readonly>
+        </div>
+
+        <!-- Tempat Magang / DUDI -->
+        <div class="mb-3">
+          <label for="tempatMagang" class="form-label fw-bold"><i class="fa-solid fa-building me-1"></i> Tempat Magang / DUDI</label>
+          <input type="text" class="form-control" id="tempatMagang" placeholder="Contoh: PT. Telkom Indonesia" required>
+        </div>
+
+        <!-- Kehadiran -->
+        <div class="mb-3">
+          <label for="kehadiran" class="form-label fw-bold"><i class="fa-solid fa-clipboard-user me-1"></i> Status Kehadiran</label>
+          <select class="form-select" id="kehadiran" required>
+            <option value="" selected disabled>-- Pilih Status Kehadiran --</option>
+            <option value="Hadir">Hadir</option>
+            <option value="Izin">Izin</option>
+            <option value="Sakit">Sakit</option>
+          </select>
+        </div>
+
+        <!-- Lokasi GPS -->
+        <div class="mb-3">
+          <label class="form-label fw-bold"><i class="fa-solid fa-location-dot me-1"></i> Lokasi Real-time (GPS)</label>
+          <div class="d-grid mb-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="getLocation()">
+              <i class="fa-solid fa-crosshairs me-1"></i> Dapatkan Lokasi Sekarang
+            </button>
+          </div>
+          <div id="locationStatus" class="text-muted text-center">Lokasi belum terdeteksi. Silakan klik tombol di atas.</div>
+          <input type="hidden" id="latitude">
+          <input type="hidden" id="longitude">
+        </div>
+
+        <!-- Tombol Kirim -->
+        <div class="d-grid gap-2 mt-4">
+          <button type="submit" class="btn btn-custom py-2" id="btnSubmit" disabled>
+            <i class="fa-solid fa-paper-plane me-1"></i> Kirim Absensi
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tampilkan tanggal saat ini
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('tanggalDisplay').value = new Date().toLocaleDateString('id-ID', options);
+
+  // Fungsi mengambil koordinat GPS
+  function getLocation() {
+    const status = document.getElementById('locationStatus');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    if (navigator.geolocation) {
+      status.innerHTML = "<span class='text-primary'><i class='fa-solid fa-spinner fa-spin'></i> Memproses lokasi GPS...</span>";
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          document.getElementById('latitude').value = lat;
+          document.getElementById('longitude').value = lng;
+          
+          status.innerHTML = `<span class='text-success'><i class='fa-solid fa-circle-check'></i> Lokasi Terdeteksi: ${lat.toFixed(5)}, ${lng.toFixed(5)}</span>`;
+          btnSubmit.disabled = false;
+        },
+        (error) => {
+          let errMessage = "Gagal mengambil lokasi.";
+          if(error.code === error.PERMISSION_DENIED) {
+            errMessage = "Izin GPS ditolak. Silakan aktifkan GPS HP Anda.";
+          }
+          status.innerHTML = `<span class='text-danger'><i class='fa-solid fa-circle-xmark'></i> ${errMessage}</span>`;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      status.innerHTML = "<span class='text-danger'>Browser Anda tidak mendukung Geolocation.</span>";
+    }
+  }
+
+  // Handle Form Submit
+  document.getElementById('absenForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const btnSubmit = document.getElementById('btnSubmit');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = "<i class='fa-solid fa-spinner fa-spin me-1'></i> Mengirim Data...";
+
+    const formData = {
+      nama: document.getElementById('nama').value,
+      kelas: document.getElementById('kelas').value,
+      tempatMagang: document.getElementById('tempatMagang').value,
+      kehadiran: document.getElementById('kehadiran').value,
+      latitude: document.getElementById('latitude').value,
+      longitude: document.getElementById('longitude').value
+    };
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+        alert("Absensi Berhasil Terkirim!");
+        document.getElementById('absenForm').reset();
+        document.getElementById('kelas').value = "XII TKJ";
+        document.getElementById('tanggalDisplay').value = new Date().toLocaleDateString('id-ID', options);
+        document.getElementById('locationStatus').innerHTML = "Lokasi belum terdeteksi. Silakan klik tombol di atas.";
+        btnSubmit.innerHTML = "<i class='fa-solid fa-paper-plane me-1'></i> Kirim Absensi";
+        btnSubmit.disabled = true;
+      })
+      .withFailureHandler(function(err) {
+        alert("Terjadi kesalahan: " + err);
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = "<i class='fa-solid fa-paper-plane me-1'></i> Kirim Absensi";
+      })
+      .simpanAbsen(formData);
+  });
+</script>
+
+</body>
+</html>
